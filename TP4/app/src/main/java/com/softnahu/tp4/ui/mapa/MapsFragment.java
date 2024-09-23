@@ -11,28 +11,31 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.softnahu.tp4.R;
-
+import com.softnahu.tp4.ui.mapa.MapaFragmentViewModel;
 
 public class MapsFragment extends Fragment {
-    private MapaFragmentViewModel vm;
-
-
+    private MapaFragmentViewModel viewModel;
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             @Nullable ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater,@Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        vm = new ViewModelProvider(this).get(MapaFragmentViewModel.class);
-        vm.getMMap().observe(getViewLifecycleOwner(), new Observer<MapaFragmentViewModel.Mapa>() {
-            @Override
+
+        viewModel = new ViewModelProvider(this).get(MapaFragmentViewModel.class);
+
+        viewModel.getMapaActual().observe(getViewLifecycleOwner(), new Observer<MapaFragmentViewModel.Mapa>() {
             public void onChanged(MapaFragmentViewModel.Mapa mapa) {
                 ((SupportMapFragment)getChildFragmentManager().findFragmentById(R.id.map)).getMapAsync(mapa);
-//                ((SupportMapFragment)getSupportFragmentManager().findFragmentById(R.id.map)).getMapAsync(mapa);
             }
         });
-        vm.obtenerMapa();
+        viewModel.mostrarMapa();
+
         return inflater.inflate(R.layout.fragment_mapa, container, false);
     }
 

@@ -1,16 +1,24 @@
 package com.softnahu.tp4.ui.mapa;
 
+import android.Manifest;
 import android.app.Application;
+import android.content.pm.PackageManager;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.Priority;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -23,29 +31,29 @@ import com.softnahu.tp4.model.Farmacia;
 import java.util.ArrayList;
 
 public class MapaFragmentViewModel extends AndroidViewModel {
-    private MutableLiveData<Mapa> mMap;
+
+    private MutableLiveData<Mapa> mapaActual;
     private ArrayList<Farmacia> listaFarmacias;
+    private FusedLocationProviderClient fusedLocationClient;
 
     public MapaFragmentViewModel(@NonNull Application application) {
         super(application);
-        // Inicia la lista de farmacias
         listaFarmacias = new ArrayList<>();
         cargarFarmacias();
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(application);
     }
 
-    public LiveData<Mapa> getMMap() {
-        if (mMap == null) {
-            mMap = new MutableLiveData<>();
+    public LiveData<Mapa> getMapaActual() {
+        if (mapaActual == null) {
+            mapaActual = new MutableLiveData<>();
         }
-        return mMap;
+        return mapaActual;
     }
 
-    public void obtenerMapa() {
-        Mapa m = new Mapa();
-        mMap.setValue(m);
+    public void mostrarMapa() {
+        mapaActual.setValue(new Mapa());
     }
 
-    // Método para cargar las farmacias con coordenadas, fotos y detalles
     private void cargarFarmacias() {
         listaFarmacias.add(new Farmacia("Farmacia Santa Lucia", "Avenida Serrana Manzana 140 Parcela 03, La Punta San Luis", R.drawable.farmaciasantalucia, "Entregas a domicilio: 2664-584038", -33.183099, -66.313148));
         listaFarmacias.add(new Farmacia("Farmacia Sierras Del Sol", "La Punta San Luis", R.drawable.farmaciasierrasdelsol, "Atencion de: domingo a lunes 9 a.m - 12 a.m", -33.185517, -66.312102));
@@ -56,52 +64,52 @@ public class MapaFragmentViewModel extends AndroidViewModel {
     public class Mapa implements OnMapReadyCallback {
         @Override
         public void onMapReady(@NonNull GoogleMap googleMap) {
-            // Cambiar el tipo de mapa a normal (calle)
             googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
 
             // Agregar marcadores de las farmacias
             for (Farmacia farmacia : listaFarmacias) {
                 LatLng ubicacion = new LatLng(farmacia.getLatitud(), farmacia.getLongitud());
-                Marker marker = googleMap.addMarker(new MarkerOptions()
+                googleMap.addMarker(new MarkerOptions()
                         .position(ubicacion)
                         .title(farmacia.getNombre())
-                        .snippet(farmacia.getDireccion())); // El snippet es el texto que se muestra debajo del título
-                marker.setTag(farmacia); // Guarda la farmacia como "tag" del marcador
+                        .snippet(farmacia.getDireccion()));
             }
 
-            // Centrar el mapa en la primera farmacia (puedes cambiar esto para que use la ubicación actual)
-            LatLng firstFarmacia = new LatLng(listaFarmacias.get(0).getLatitud(), listaFarmacias.get(0).getLongitud());
-            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(firstFarmacia, 15));
-
-            // Configura el adaptador de ventanas de información personalizado
-            googleMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
-                @Override
-                public View getInfoWindow(Marker marker) {
-                    return null; // Usamos el método `getInfoContents` en su lugar
-                }
-
-                @Override
-                public View getInfoContents(Marker marker) {
-                    // Infla el layout personalizado de la ventana de información
-                    View infoWindow = View.inflate(getApplication(), R.layout.custom_info_window, null);
-
-                    // Obtén los views del layout
-                    TextView tvNombre = infoWindow.findViewById(R.id.tvNombre);
-                    TextView tvDireccion = infoWindow.findViewById(R.id.tvDireccion);
-                    ImageView ivFoto = infoWindow.findViewById(R.id.ivFoto);
-
-                    // Obtén la farmacia del tag del marcador
-                    Farmacia farmacia = (Farmacia) marker.getTag();
-
-                    if (farmacia != null) {
-                        tvNombre.setText(farmacia.getNombre());
-                        tvDireccion.setText(farmacia.getDireccion());
-                        ivFoto.setImageDrawable(ContextCompat.getDrawable(getApplication(), farmacia.getFoto())); // Establece la imagen desde drawable
-                    }
-
-                    return infoWindow;
-                }
-            });
+            // Habilitar la ubicación actual
+            if (ActivityCompat.checkSelfPermission(getApplication(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                    ActivityCompat.checkSelfPermission(getApplication(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // Aquí deberías solicitar permisos
+                return;
+            }
+            googleMap.setMyLocationEnabled(true); // Habilitar la ubicación actual
+            obtenerUbicacionActual(googleMap);
         }
+    }
+
+    private void obtenerUbicacionActual(GoogleMap googleMap) {
+        if (ActivityCompat.checkSelfPermission(getApplication(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getApplication(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
+            LocationRequest locationRequest = new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 5000)
+                    .setWaitForAccurateLocation(false)
+                    .setMinUpdateIntervalMillis(10000)
+                    .setMaxUpdateDelayMillis(10000)
+                    .build();
+            if (location != null) {
+                LatLng ubicacionActual = new LatLng(location.getLatitude(), location.getLongitude());
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(ubicacionActual, 14));
+            } else {
+                Log.e("MapaViewModel", "No se pudo obtener la ubicación actual.");
+                // Podrías centrar en una ubicación predeterminada aquí
+            }
+        });
     }
 }

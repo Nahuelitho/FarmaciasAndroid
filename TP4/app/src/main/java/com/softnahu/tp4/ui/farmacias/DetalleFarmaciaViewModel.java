@@ -14,7 +14,8 @@ import com.softnahu.tp4.model.Farmacia;
 public class DetalleFarmaciaViewModel extends AndroidViewModel {
     private MutableLiveData<Farmacia> mFarmacia;
 
-    public DetalleFarmaciaViewModel(@NonNull Application application) {
+    public DetalleFarmaciaViewModel(@NonNull Application application)
+    {
         super(application);
     }
 
