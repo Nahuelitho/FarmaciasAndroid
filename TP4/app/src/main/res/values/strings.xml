@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">Explorador de Farmacias</string>
+    <string name="navigation_drawer_open">Abierto</string>
+    <string name="navigation_drawer_close">Cerrar</string>
+    <string name="nav_header_title">Explorador de Farmacias</string>
+    <string name="nav_header_desc">Inicio</string>
+
+
+    <string name="title_activity_maps_farmacia">Mapa</string>
+
+    <string name="next">Siguiente</string>
+    <string name="previous">Anterior</string>
+
+    <string name="farmacia_image">Imagen de la farmacia</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>

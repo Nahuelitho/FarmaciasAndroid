@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/nav_farmacias">
+    <fragment
+        android:id="@+id/map"
+        android:name="com.softnahu.tp4.ui.mapa.MapsFragment"
+        android:label="Ubicacion"
+        tools:layout="@layout/fragment_mapa" />
+    <fragment
+        android:id="@+id/nav_farmacias"
+        android:name="com.softnahu.tp4.ui.farmacias.FarmaciasFragment"
+        android:label="Farmacias"
+        tools:layout="@layout/fragment_farmacias" >
+        <action
+            android:id="@+id/action_nav_farmacias_to_detalleFarmacia2"
+            app:destination="@id/detalleFarmacia2" />
+    </fragment>
+    <fragment
+        android:id="@+id/detalleFarmacia2"
+        android:name="com.softnahu.tp4.ui.farmacias.DetalleFarmaciaFragment"
+        android:label="Detalle Farmacia"
+        tools:layout="@layout/fragment_detalle_farmacia" >
+        <action
+            android:id="@+id/action_detalleFarmacia2_to_nav_farmacias"
+            app:destination="@id/nav_farmacias" />
+
+    </fragment>
+    <fragment
+        android:id="@+id/fSalir"
+        android:name="com.softnahu.tp4.ui.salir.SalirFragment"
+        android:label="Salir"
+        tools:layout="@layout/fragment_salir" />
+</navigation>
